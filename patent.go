@@ -1,4 +1,4 @@
-package tagger
+package patentcluster
 
 import (
 	"strings"
