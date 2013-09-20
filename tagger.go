@@ -10,24 +10,23 @@ import (
 	"strings"
 )
 
-var tagset = make(map[string]int)
-var patents = [](*Patent){}
+var Tagset = make(map[string]int)
 var number_of_tags float64
 var sqrt_num_tags float64
 var visited = make(map[string]int)
 
-/** enumerates all tags in the taglist and inserts them into `tagset */
+/** enumerates all tags in the taglist and inserts them into `Tagset */
 func extract_tags(taglist string) {
 	tags := strings.Split(taglist, " ")
 	for _, s := range tags {
-		tagset[s] += 1
+		Tagset[s] += 1
 	}
 }
 
 /**
   reads buzzx.csv and accumulates all patent tags
 */
-func read_file(string filename) {
+func Read_file(filename string) {
 	/* open buzzx.csv file and start counting tags */
 	datafile, err := os.Open(filename)
 	if err != nil {
@@ -50,7 +49,7 @@ func read_file(string filename) {
 		tags := record[3]
 		extract_tags(tags)
 	}
-	number_of_tags = float64(len(tagset))
+	number_of_tags = float64(len(Tagset))
 	sqrt_num_tags = math.Sqrt(number_of_tags)
 }
 
@@ -58,12 +57,13 @@ func read_file(string filename) {
   loops through buzzx.csv and creates a patent instance
   for each row
 */
-func make_patents(string filename) {
+func Make_patents(filename string) [](*Patent) {
+    patents := [](*Patent){}
 	/* open buzzx.csv file and start counting tags */
 	datafile, err := os.Open(filename)
 	if err != nil {
 		fmt.Println("Error:", err)
-		return
+		return nil
 	}
 	defer datafile.Close()
 	reader := csv.NewReader(datafile)
@@ -74,19 +74,20 @@ func make_patents(string filename) {
 			break
 		} else if err != nil {
 			fmt.Println("Error:", err)
-			return
+			return nil
 		}
 		number := record[0]
 		tags := record[3]
 		p := makePatent(number, tags)
 		patents = append(patents, p)
 	}
+    return patents
 }
 
 /**
   for test purposes, do a pairwise comparison of all patents
 */
-func pairwise_run() {
+func pairwise_run(patents [](*Patent)) {
 	vectorfile, _ := os.Create("pairwise.txt")
 	w := bufio.NewWriter(vectorfile)
 	for _, p1 := range patents {
@@ -104,11 +105,11 @@ func pairwise_run() {
 
 func main() {
 	fmt.Println("Creating tag set...")
-	read_file("buzzx.csv")
+	Read_file("buzzx.csv")
 	fmt.Println("Accumulated", number_of_tags, "tags")
 	fmt.Println("Done creating tag set!")
 	fmt.Println("Making patent instances...")
-	make_patents("buzzx.csv")
+    patents := Make_patents("buzzx.csv")
 	fmt.Println("Finished", len(patents), "patent instances")
 	p1 := patents[1]
 	p2 := patents[2]
