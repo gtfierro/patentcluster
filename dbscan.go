@@ -1,5 +1,11 @@
 package patentcluster
 
+import (
+    "os"
+    "fmt"
+    "bufio"
+)
+
 var NOISE = "NOISE" // cluster_id string for noisy patents
 var UNCLASSIFIED = "UNCLASSIFIED" // cluster_id string for unclassified patents
 
@@ -88,7 +94,7 @@ func (db *DBSCAN) nextClusterID(clid string) (number string) {
 
 func (db *DBSCAN) Run() {
     /* find first patent classified as NOISE */
-    cluster_id := db.nextClusterID(NOISE)
+    cluster_id := db.nextClusterID(UNCLASSIFIED)
     for _, point := range db.set_of_points {
         if point.cluster_id == UNCLASSIFIED {
             if db.ExpandCluster(point, cluster_id) {
@@ -97,6 +103,35 @@ func (db *DBSCAN) Run() {
         }
     }
 }
+
+/**
+    Dumps db.set_of_points to a CSV file:
+    patentnumber, cluster_id
+*/
+func (db *DBSCAN) To_file(filename string) {
+    outfile, err := os.Create(filename)
+    if err != nil {
+        fmt.Println("Could not output to file", filename, ":", err)
+        return
+    }
+    defer outfile.Close()
+    writer := bufio.NewWriter(outfile)
+
+    for _, patent := range db.set_of_points {
+        if patent.cluster_id != UNCLASSIFIED && patent.cluster_id != NOISE {
+            line := patent.number + ", " + patent.cluster_id + "\n"
+            writer.WriteString(line)
+        }
+    }
+    for _, patent := range db.set_of_points {
+        if patent.cluster_id == UNCLASSIFIED && patent.cluster_id == NOISE {
+            line := patent.number + ", " + patent.cluster_id + "\n"
+            writer.WriteString(line)
+        }
+    }
+    writer.Flush()
+}
+
 /**
     Takes a slice of patent pointers and initializes an instance of the
     DBSCAN algorithm. Does not run the algorithm
