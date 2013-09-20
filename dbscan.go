@@ -1,5 +1,7 @@
 package patentcluster
 
+var NOISE = "NOISE" // cluster_id string for noisy patents
+
 type DBSCAN struct {
     set_of_points map[string](*Patent)
     epsilon float64
@@ -36,9 +38,28 @@ func (db *DBSCAN) ChangeClusterIDs(points [](*Patent), cluster_id string) {
 func (db *DBSCAN) RegionQuery(point *Patent, epsilon float64) [](*Patent) {
     returned_points := [](*Patent){}
     for _, patent := range db.set_of_points {
+        if point.number == patent.number {
+            continue
+        }
         if point.JaccardDistance(patent) <= epsilon {
             returned_points = append(returned_points, patent)
         }
     }
     return returned_points
+}
+
+/**
+    Takes a slice of patent pointers and initializes an instance of the
+    DBSCAN algorithm. Does not run the algorithm
+*/
+func Init_DBSCAN(points [](*Patent), epsilon float64, min_cluster_points int) (*DBSCAN) {
+    db := new(DBSCAN)
+    db.epsilon = epsilon
+    db.min_cluster_points = min_cluster_points
+    db.set_of_points = make(map[string](*Patent))
+    for _, patent := range points {
+        patent.cluster_id = NOISE
+        db.set_of_points[patent.number] = patent
+    }
+    return db
 }
