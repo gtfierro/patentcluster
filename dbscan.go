@@ -36,19 +36,67 @@ func (db *DBSCAN) ChangeClusterIDs(points [](*Patent), cluster_id string) {
     Because we're using Jaccard distance to compare patents, which isn't
     an absolute distance, a normal R* tree might not work.
 */
-func (db *DBSCAN) RegionQuery(point *Patent, epsilon float64) [](*Patent) {
+func (db *DBSCAN) RegionQuery(point *Patent) [](*Patent) {
     returned_points := [](*Patent){}
     for _, patent := range db.set_of_points {
         if point.number == patent.number {
             continue
         }
-        if point.JaccardDistance(patent) <= epsilon {
+        if point.JaccardDistance(patent) <= db.epsilon {
             returned_points = append(returned_points, patent)
         }
     }
     return returned_points
 }
 
+func (db *DBSCAN) ExpandCluster(point *Patent, cluster_id string) bool {
+    seeds := db.RegionQuery(point)
+    if len(seeds) < db.min_cluster_points {
+        return false
+    }
+    db.ChangeClusterIDs(seeds, cluster_id)
+    for {
+        if len(seeds) == 0 {
+            break
+        }
+        current_point := seeds[0]
+        result := db.RegionQuery(current_point)
+        if len(result) > db.min_cluster_points {
+            for _, result_point := range result {
+                if result_point.cluster_id == NOISE ||
+                   result_point.cluster_id == UNCLASSIFIED {
+                       if result_point.cluster_id == UNCLASSIFIED {
+                           seeds = append(seeds, result_point)
+                       }
+                       db.ChangeClusterID(result_point, cluster_id)
+               }
+           }
+       }
+       seeds = seeds[1:]
+   }
+   return true;
+}
+
+func (db *DBSCAN) nextClusterID(clid string) (number string) {
+    for _, pat := range db.set_of_points {
+        if pat.cluster_id == clid {
+            return pat.number
+        }
+    }
+    return ""
+}
+
+func (db *DBSCAN) Run() {
+    /* find first patent classified as NOISE */
+    cluster_id := db.nextClusterID(NOISE)
+    for _, point := range db.set_of_points {
+        if point.cluster_id == UNCLASSIFIED {
+            if db.ExpandCluster(point, cluster_id) {
+                cluster_id = db.nextClusterID(cluster_id)
+            }
+        }
+    }
+}
 /**
     Takes a slice of patent pointers and initializes an instance of the
     DBSCAN algorithm. Does not run the algorithm
@@ -59,7 +107,7 @@ func Init_DBSCAN(points [](*Patent), epsilon float64, min_cluster_points int) (*
     db.min_cluster_points = min_cluster_points
     db.set_of_points = make(map[string](*Patent))
     for _, patent := range points {
-        patent.cluster_id = NOISE
+        patent.cluster_id = UNCLASSIFIED
         db.set_of_points[patent.number] = patent
     }
     return db
