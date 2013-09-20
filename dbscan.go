@@ -1,6 +1,7 @@
 package patentcluster
 
 var NOISE = "NOISE" // cluster_id string for noisy patents
+var UNCLASSIFIED = "UNCLASSIFIED" // cluster_id string for unclassified patents
 
 type DBSCAN struct {
     set_of_points map[string](*Patent)
