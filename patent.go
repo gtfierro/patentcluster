@@ -5,8 +5,9 @@ import (
 )
 
 type Patent struct {
-	number string
-	tags   map[string]int
+	number     string         // patent_id number
+	tags       map[string]int // hash of all the tags associated with this patent
+	cluster_id string         // patent_id of the cluster to which this patent belongs
 }
 
 func (p *Patent) JaccardDistance(target *Patent) float64 {
