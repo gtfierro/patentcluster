@@ -4,6 +4,7 @@ import (
     "os"
     "fmt"
     "bufio"
+    "sort"
 )
 
 var NOISE = "NOISE" // cluster_id string for noisy patents
@@ -24,7 +25,7 @@ func (db *DBSCAN) ChangeClusterID(point *Patent, cluster_id string) {
 
 /**
     Given a list of points, iterates through them and changes the cluster_id
-    of each. This is called in order to identify a set of patents as 
+    of each. This is called in order to identify a set of patents as
     being in a cluster
 */
 func (db *DBSCAN) ChangeClusterIDs(points [](*Patent), cluster_id string) {
@@ -165,6 +166,47 @@ func (db *DBSCAN) To_file(filename string) {
         }
     }
     writer.Flush()
+}
+
+/**
+    For an instance of DBSCAN (after Run() has been called), returns
+    * number of clusters
+    * mean cluster size
+    * median cluster size
+    * size of largest Cluster
+    * list of patents in largest Cluster
+
+*/
+func (db *DBSCAN) Compute_Stats() (int, float64, int, int, [](*Patent)) {
+    largest_cluster := [](*Patent){}
+    largest_cluster_key := ""
+    cluster_counts := make(map[string]int)
+    for _, v := range db.set_of_points {
+        cluster_counts[v.cluster_id] += 1
+    }
+    list_of_counts := []int{}
+    max := 0
+    sum := 0.0
+    for k, v:= range cluster_counts {
+        if v > max {
+            max = v
+            largest_cluster_key = k
+        }
+        sum += float64(v)
+        list_of_counts = append(list_of_counts, v)
+    }
+    for _, v := range db.set_of_points {
+        if v.cluster_id == largest_cluster_key {
+            largest_cluster = append(largest_cluster, v)
+        }
+    }
+
+    mean_cluster_size := sum / float64(len(cluster_counts))
+    sort.Ints(list_of_counts)
+    median_key := len(list_of_counts) / 2
+    median_cluster_size := list_of_counts[median_key]
+
+    return len(cluster_counts), mean_cluster_size, median_cluster_size, len(largest_cluster), largest_cluster
 }
 
 /**
