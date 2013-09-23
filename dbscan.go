@@ -182,7 +182,9 @@ func (db *DBSCAN) Compute_Stats() (int, float64, int, int, [](*Patent)) {
     largest_cluster_key := ""
     cluster_counts := make(map[string]int)
     for _, v := range db.set_of_points {
-        cluster_counts[v.cluster_id] += 1
+        if v.cluster_id != NOISE {
+            cluster_counts[v.cluster_id] += 1
+        }
     }
     list_of_counts := []int{}
     max := 0
