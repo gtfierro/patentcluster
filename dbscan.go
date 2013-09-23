@@ -45,14 +45,22 @@ func (db *DBSCAN) ChangeClusterIDs(points [](*Patent), cluster_id string) {
 func (db *DBSCAN) RegionQuery(point *Patent) [](*Patent) {
     returned_points := [](*Patent){}
     for _, patent := range db.set_of_points {
-        if point.number == patent.number {
-            continue
-        }
         if point.JaccardDistance(patent) <= db.epsilon {
             returned_points = append(returned_points, patent)
         }
     }
     return returned_points
+}
+
+func remove_point_from_seeds(point *Patent, seeds [](*Patent)) [](*Patent) {
+    newseeds := [](*Patent){}
+    for _, patent := range seeds {
+        if point.number == patent.number {
+            continue
+        }
+        newseeds = append(newseeds, patent)
+    }
+    return newseeds
 }
 
 func (db *DBSCAN) ExpandCluster(point *Patent, cluster_id string) bool {
@@ -61,6 +69,7 @@ func (db *DBSCAN) ExpandCluster(point *Patent, cluster_id string) bool {
         return false
     }
     db.ChangeClusterIDs(seeds, cluster_id)
+    seeds = remove_point_from_seeds(point, seeds)
     for {
         if len(seeds) == 0 {
             break
