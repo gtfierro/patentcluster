@@ -66,6 +66,7 @@ func remove_point_from_seeds(point *Patent, seeds [](*Patent)) [](*Patent) {
 func (db *DBSCAN) ExpandCluster(point *Patent, cluster_id string) bool {
     seeds := db.RegionQuery(point)
     if len(seeds) < db.min_cluster_points {
+        db.ChangeClusterID(point, NOISE);
         return false
     }
     db.ChangeClusterIDs(seeds, cluster_id)
@@ -133,7 +134,7 @@ func (db *DBSCAN) To_file(filename string) {
         }
     }
     for _, patent := range db.set_of_points {
-        if patent.cluster_id == UNCLASSIFIED && patent.cluster_id == NOISE {
+        if patent.cluster_id == UNCLASSIFIED || patent.cluster_id == NOISE {
             line := patent.number + ", " + patent.cluster_id + "\n"
             writer.WriteString(line)
         }
