@@ -36,7 +36,7 @@ func (db *DBSCAN) ChangeClusterIDs(points [](*Patent), cluster_id string) {
 /**
     For the given patent, loops through all other patents in the DBSCAN
     intance's set_of_points and returns a slice of all Patents within
-    distance `epsilon` of that patent.
+    distance `epsilon` of that patent. This includes the given patent.
 
     At some point, this should be optimized to use a modified R* tree.
     Because we're using Jaccard distance to compare patents, which isn't
@@ -52,6 +52,10 @@ func (db *DBSCAN) RegionQuery(point *Patent) [](*Patent) {
     return returned_points
 }
 
+/**
+    Given a point and a list of points, returns a copy of the list
+    with every instance of `point` removed
+*/
 func remove_point_from_seeds(point *Patent, seeds [](*Patent)) [](*Patent) {
     newseeds := [](*Patent){}
     for _, patent := range seeds {
@@ -63,6 +67,15 @@ func remove_point_from_seeds(point *Patent, seeds [](*Patent)) [](*Patent) {
     return newseeds
 }
 
+/**
+   Attempts to classify the set of points within the region surrounding the
+   argument `point`. If the point's region does not contain the requisite
+   number of points, it is classified as NOISE. Otherwise, we classify all
+   region points as belonging to the same cluster. We then loop through all the
+   region points and attempt to associate them with the same cluster.
+
+   Returns TRUE if `point` belongs to a cluster, and FALSE otherwise
+*/
 func (db *DBSCAN) ExpandCluster(point *Patent, cluster_id string) bool {
     seeds := db.RegionQuery(point)
     if len(seeds) < db.min_cluster_points {
@@ -93,6 +106,10 @@ func (db *DBSCAN) ExpandCluster(point *Patent, cluster_id string) bool {
    return true;
 }
 
+/**
+    returns the number of the first Patent in the DBSCAN.set_of_points
+    that is classified as the cluster_id `clid`
+*/
 func (db *DBSCAN) nextClusterID(clid string) (number string) {
     for _, pat := range db.set_of_points {
         if pat.cluster_id == clid {
@@ -102,6 +119,10 @@ func (db *DBSCAN) nextClusterID(clid string) (number string) {
     return ""
 }
 
+/**
+    Runs the DBSCAN algorithm, classifying all points in
+    DBSCAN.set_of_points as belonging to a cluster or as NOISE.
+*/
 func (db *DBSCAN) Run() {
     /* find first patent classified as NOISE */
     cluster_id := db.nextClusterID(UNCLASSIFIED)
@@ -117,6 +138,10 @@ func (db *DBSCAN) Run() {
 /**
     Dumps db.set_of_points to a CSV file:
     patentnumber, cluster_id
+
+    Places all points that are part of a cluster
+    at the beginning of the file. All NOISE points
+    are listed at the end.
 */
 func (db *DBSCAN) To_file(filename string) {
     outfile, err := os.Create(filename)
