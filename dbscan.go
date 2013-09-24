@@ -109,7 +109,7 @@ func remove_point_from_seeds(point *Patent, seeds [](*Patent)) [](*Patent) {
    Returns TRUE if `point` belongs to a cluster, and FALSE otherwise
 */
 func (db *DBSCAN) ExpandCluster(point *Patent, cluster_id string) bool {
-    seeds := db.RegionQuery(point)
+    seeds := db.PRegionQuery(point)
     if len(seeds) < db.min_cluster_points {
         db.ChangeClusterID(point, NOISE);
         return false
@@ -121,7 +121,7 @@ func (db *DBSCAN) ExpandCluster(point *Patent, cluster_id string) bool {
             break
         }
         current_point := seeds[0]
-        result := db.RegionQuery(current_point)
+        result := db.PRegionQuery(current_point)
         if len(result) > db.min_cluster_points {
             for _, result_point := range result {
                 if result_point.cluster_id == NOISE ||
