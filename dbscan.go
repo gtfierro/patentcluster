@@ -237,7 +237,10 @@ func (db *DBSCAN) Compute_Stats() (int, float64, int, int, [](*Patent)) {
     mean_cluster_size := sum / float64(len(cluster_counts))
     sort.Ints(list_of_counts)
     median_key := len(list_of_counts) / 2
-    median_cluster_size := list_of_counts[median_key]
+    median_cluster_size := 0
+    if len(list_of_counts) > 0 {
+        median_cluster_size = list_of_counts[median_key]
+    }
 
     return len(cluster_counts), mean_cluster_size, median_cluster_size, len(largest_cluster), largest_cluster
 }
