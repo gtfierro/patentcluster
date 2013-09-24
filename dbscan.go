@@ -174,8 +174,11 @@ func (db *DBSCAN) Run() {
     Places all points that are part of a cluster
     at the beginning of the file. All NOISE points
     are listed at the end.
+
+    If with_tags is set to true, includes a space separated list
+    of all the tags for each patent
 */
-func (db *DBSCAN) To_file(filename string) {
+func (db *DBSCAN) To_file(filename string, with_tags bool) {
     outfile, err := os.Create(filename)
     if err != nil {
         fmt.Println("Could not output to file", filename, ":", err)
@@ -186,13 +189,21 @@ func (db *DBSCAN) To_file(filename string) {
 
     for _, patent := range db.set_of_points {
         if patent.cluster_id != UNCLASSIFIED && patent.cluster_id != NOISE {
-            line := patent.number + ", " + patent.cluster_id + "\n"
+            line := patent.number + ", " + patent.cluster_id
+            if with_tags {
+                line += patent.tags_to_string()
+            }
+            line += "\n"
             writer.WriteString(line)
         }
     }
     for _, patent := range db.set_of_points {
         if patent.cluster_id == UNCLASSIFIED || patent.cluster_id == NOISE {
-            line := patent.number + ", " + patent.cluster_id + "\n"
+            line := patent.number + ", " + patent.cluster_id
+            if with_tags {
+                line += patent.tags_to_string()
+            }
+            line += "\n"
             writer.WriteString(line)
         }
     }
