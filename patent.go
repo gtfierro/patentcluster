@@ -39,3 +39,15 @@ func makePatent(number, tagstring string) *Patent {
 	p.number = number
 	return p
 }
+
+/**
+    Returns a string containing all tags
+    separated by spaces
+*/
+func (p *Patent) tags_to_string() string {
+    ret := " "
+    for tag, _ := range p.tags {
+        ret += tag + " "
+    }
+    return ret
+}
