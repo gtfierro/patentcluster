@@ -5,10 +5,12 @@ import (
     "fmt"
     "bufio"
     "sort"
+    "sync"
 )
 
 var NOISE = "NOISE" // cluster_id string for noisy patents
 var UNCLASSIFIED = "UNCLASSIFIED" // cluster_id string for unclassified patents
+var wg sync.WaitGroup
 
 type DBSCAN struct {
     set_of_points map[string](*Patent)
@@ -50,6 +52,35 @@ func (db *DBSCAN) RegionQuery(point *Patent) [](*Patent) {
             returned_points = append(returned_points, patent)
         }
     }
+    return returned_points
+}
+
+func (db *DBSCAN) PRegionQuery(point *Patent) [](*Patent) {
+    returned_points := [](*Patent){}
+    results := make(chan *Patent)
+    done := make(chan bool)
+    go func(results chan *Patent, done chan bool) {
+        for {
+            select {
+            case val := <- results:
+                returned_points = append(returned_points, val)
+            case <- done:
+                break
+            }
+        }
+    }(results, done)
+
+    for _, patent := range db.set_of_points {
+        wg.Add(1)
+        go func(point, patent *Patent, results chan *Patent) {
+            if point.JaccardDistance(patent) <= db.epsilon {
+                results <- patent
+            }
+            wg.Done()
+        }(point, patent, results)
+    }
+    wg.Wait()
+    done <- true
     return returned_points
 }
 
