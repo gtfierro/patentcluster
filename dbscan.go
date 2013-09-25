@@ -189,9 +189,9 @@ func (db *DBSCAN) To_file(filename string, with_tags bool) {
 
     for _, patent := range db.set_of_points {
         if patent.cluster_id != UNCLASSIFIED && patent.cluster_id != NOISE {
-            line := patent.number + ", " + patent.cluster_id
+            line := patent.number + "," + patent.cluster_id
             if with_tags {
-                line += patent.tags_to_string()
+                line += "," + patent.tags_to_string()
             }
             line += "\n"
             writer.WriteString(line)
@@ -199,9 +199,9 @@ func (db *DBSCAN) To_file(filename string, with_tags bool) {
     }
     for _, patent := range db.set_of_points {
         if patent.cluster_id == UNCLASSIFIED || patent.cluster_id == NOISE {
-            line := patent.number + ", " + patent.cluster_id
+            line := patent.number + "," + patent.cluster_id
             if with_tags {
-                line += patent.tags_to_string()
+                line += "," + patent.tags_to_string()
             }
             line += "\n"
             writer.WriteString(line)

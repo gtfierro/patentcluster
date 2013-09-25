@@ -45,9 +45,9 @@ func makePatent(number, tagstring string) *Patent {
     separated by spaces
 */
 func (p *Patent) tags_to_string() string {
-    ret := " "
+    ret := ""
     for tag, _ := range p.tags {
         ret += tag + " "
     }
-    return ret
+    return ret[0:len(ret)-1]
 }
