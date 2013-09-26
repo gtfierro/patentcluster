@@ -1,9 +1,5 @@
 package patentcluster
 
-import (
-	"strings"
-)
-
 type Patent struct {
 	number     string         // patent_id number
 	tags       map[string]int // hash of all the tags associated with this patent
@@ -30,10 +26,10 @@ func (p *Patent) JaccardDistance(target *Patent) float64 {
   tags for a patent, returns a reference to a Patent
   object
 */
-func makePatent(number, tagstring string) *Patent {
+func makePatent(number string, taglist []string) *Patent {
 	p := new(Patent)
 	p.tags = make(map[string]int)
-	for _, tag := range strings.Split(tagstring, " ") {
+	for _, tag := range taglist {
 		p.tags[tag] = 1
 	}
 	p.number = number
