@@ -5,7 +5,7 @@ import (
 )
 
 type Patent struct {
-	number     string         // patent_id number
+	Number     string         // patent_id number
 	tags       map[string]int // hash of all the tags associated with this patent
 	cluster_id string         // patent_id of the cluster to which this patent belongs
 	app_date   time.Time
@@ -37,7 +37,7 @@ func makePatent(number, app_date string, taglist []string) *Patent {
 	for _, tag := range taglist {
 		p.tags[tag] = 1
 	}
-	p.number = number
+	p.Number = number
 	p.app_date, _ = time.Parse("Jan 02 2006", app_date)
 	return p
 }

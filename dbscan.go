@@ -114,7 +114,7 @@ func (db *DBSCAN) PRegionQuery(point *Patent) [](*Patent) {
 func remove_point_from_seeds(point *Patent, seeds [](*Patent)) [](*Patent) {
 	newseeds := [](*Patent){}
 	for _, patent := range seeds {
-		if point.number == patent.number {
+		if point.Number == patent.Number {
 			continue
 		}
 		newseeds = append(newseeds, patent)
@@ -168,7 +168,7 @@ func (db *DBSCAN) ExpandCluster(point *Patent, cluster_id string) bool {
 func (db *DBSCAN) nextClusterID(clid string) (number string) {
 	for _, pat := range db.set_of_points {
 		if pat.cluster_id == clid {
-			return pat.number
+			return pat.Number
 		}
 	}
 	return ""
@@ -212,7 +212,7 @@ func (db *DBSCAN) To_file(filename string, with_tags bool) {
 
 	for _, patent := range db.set_of_points {
 		if patent.cluster_id != UNCLASSIFIED && patent.cluster_id != NOISE {
-			line := patent.number + "," + patent.cluster_id + "," + patent.app_date.Format("Jan 02 2006")
+			line := patent.Number + "," + patent.cluster_id + "," + patent.app_date.Format("Jan 02 2006")
 			if with_tags {
 				line += "," + patent.tags_to_string()
 			}
@@ -222,7 +222,7 @@ func (db *DBSCAN) To_file(filename string, with_tags bool) {
 	}
 	for _, patent := range db.set_of_points {
 		if patent.cluster_id == UNCLASSIFIED || patent.cluster_id == NOISE {
-			line := patent.number + "," + patent.cluster_id + "," + patent.app_date.Format("Jan 02 2006")
+			line := patent.Number + "," + patent.cluster_id + "," + patent.app_date.Format("Jan 02 2006")
 			if with_tags {
 				line += "," + patent.tags_to_string()
 			}
@@ -321,7 +321,7 @@ func Init_DBSCAN(points [](*Patent), epsilon float64, min_cluster_points int) *D
 	db.set_of_points = make(map[string](*Patent))
 	for _, patent := range points {
 		patent.cluster_id = UNCLASSIFIED
-		db.set_of_points[patent.number] = patent
+		db.set_of_points[patent.Number] = patent
 	}
 	return db
 }
