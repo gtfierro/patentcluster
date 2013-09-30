@@ -4,6 +4,7 @@ type Patent struct {
 	number     string         // patent_id number
 	tags       map[string]int // hash of all the tags associated with this patent
 	cluster_id string         // patent_id of the cluster to which this patent belongs
+	app_date   string
 }
 
 func (p *Patent) JaccardDistance(target *Patent) float64 {
@@ -26,13 +27,14 @@ func (p *Patent) JaccardDistance(target *Patent) float64 {
   tags for a patent, returns a reference to a Patent
   object
 */
-func makePatent(number string, taglist []string) *Patent {
+func makePatent(number, app_date string, taglist []string) *Patent {
 	p := new(Patent)
 	p.tags = make(map[string]int)
 	for _, tag := range taglist {
 		p.tags[tag] = 1
 	}
 	p.number = number
+	p.app_date = app_date
 	return p
 }
 

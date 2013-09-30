@@ -30,8 +30,8 @@ func split_tags(taglist string, stem bool) []string {
   to a slice of the tags ([]string). if stem is true,
   runs the Porter stemming on each of the tags
 */
-func Extract_file_contents(filename string, stem bool) map[string]([]string) {
-	data := make(map[string]([]string))
+func Extract_file_contents(filename string, stem bool) [](*Patent) {
+	patents := [](*Patent){}
 	datafile, err := os.Open(filename)
 	if err != nil {
 		fmt.Println("Error:", err)
@@ -49,25 +49,14 @@ func Extract_file_contents(filename string, stem bool) map[string]([]string) {
 			fmt.Println("Error:", err)
 			return nil
 		}
-		data[record[0]] = split_tags(record[3], stem)
-		for _, stem := range data[record[0]] {
+		number := record[0]
+		app_date := record[1]
+		tags := split_tags(record[3], stem)
+		p := makePatent(number, app_date, tags)
+		patents = append(patents, p)
+		for _, stem := range tags {
 			Tagset[string(stem)] += 1
 		}
-	}
-	return data
-}
-
-/**
-  loops through buzzx.csv and creates a patent instance
-  for each row
-  if `stem` is True, applies the Porter stemming algorithm to all tags
-*/
-func Make_patents(data map[string]([]string)) [](*Patent) {
-	patents := [](*Patent){}
-	/* open buzzx.csv file and start counting tags */
-	for number, taglist := range data {
-		p := makePatent(number, taglist)
-		patents = append(patents, p)
 	}
 	return patents
 }

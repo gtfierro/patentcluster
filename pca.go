@@ -36,13 +36,14 @@ func define_tag_order(tagset map[string]int) map[string]int {
 /**
   Given the
 */
-func Create_sparse_data_matrix(tagorder map[string]int, data map[string]([]string)) *matrix.SparseMatrix {
+func Create_sparse_data_matrix(tagorder map[string]int, patents [](*Patent)) *matrix.SparseMatrix {
 	number_of_tags := len(tagorder)
-	number_of_points := len(data)
+	number_of_points := len(patents)
 	matrix := matrix.ZerosSparse(number_of_tags, number_of_points) // rows, columns
 	col := 0
-	for _, taglist := range data {
-		for _, tag := range taglist {
+	for _, p := range patents {
+		taglist := p.tags
+		for tag, _ := range taglist {
 			row := tagorder[tag]
 			matrix.Set(row, col, 1)
 		}
@@ -110,13 +111,12 @@ func Compute_n_eigenstuffs(matrix *matrix.SparseMatrix, rank, num_columns, n int
 	return eigenvalues, eigenvectors
 }
 
-func Compute_coordinates(data map[string]([]string)) {
+func Compute_coordinates(patents [](*Patent)) {
 	fmt.Println("Making patents...")
-	patents := Make_patents(data)
 	fmt.Println("Defining tag order...")
 	tagorder := define_tag_order(Tagset)
 	fmt.Println(len(patents), "patents found")
 	fmt.Println("Constructing sparse matrix...")
-	matrix := Create_sparse_data_matrix(tagorder, data)
-	Compute_n_eigenstuffs(matrix, len(data), len(tagorder), 3)
+	matrix := Create_sparse_data_matrix(tagorder, patents)
+	Compute_n_eigenstuffs(matrix, len(patents), len(tagorder), 3)
 }
