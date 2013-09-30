@@ -28,6 +28,7 @@ func sortMapByValue(m map[string]int) PairList {
     i := 0
     for k, v := range m {
         p[i] = pair{k, v}
+        i += 1
     }
     sort.Sort(p)
     return p
