@@ -3,35 +3,35 @@ package patentcluster
 import (
 	"encoding/csv"
 	"fmt"
+	"github.com/agonopol/go-stem/stemmer"
 	"io"
 	"os"
 	"strings"
-    "github.com/agonopol/go-stem/stemmer"
 )
 
 var Tagset = make(map[string]int)
 
 /** Given a space separated list of tags, returns a string slice
-    of those tags. If stem is true, runs the Porter stemming algorithm
-    on each tag
+  of those tags. If stem is true, runs the Porter stemming algorithm
+  on each tag
 */
 func split_tags(taglist string, stem bool) []string {
-    tags := strings.Split(taglist, " ")
-    res := []string{}
+	tags := strings.Split(taglist, " ")
+	res := []string{}
 	for _, s := range tags {
-        stem := stemmer.Stem([]byte(s))
-        res = append(res, string(stem))
-    }
-    return res
+		stem := stemmer.Stem([]byte(s))
+		res = append(res, string(stem))
+	}
+	return res
 }
 
-/** 
-    given a filename, return a map of patent number (string)
-    to a slice of the tags ([]string). if stem is true,
-    runs the Porter stemming on each of the tags
+/**
+  given a filename, return a map of patent number (string)
+  to a slice of the tags ([]string). if stem is true,
+  runs the Porter stemming on each of the tags
 */
 func Extract_file_contents(filename string, stem bool) map[string]([]string) {
-    data := make(map[string]([]string))
+	data := make(map[string]([]string))
 	datafile, err := os.Open(filename)
 	if err != nil {
 		fmt.Println("Error:", err)
@@ -39,7 +39,7 @@ func Extract_file_contents(filename string, stem bool) map[string]([]string) {
 	}
 	defer datafile.Close()
 	reader := csv.NewReader(datafile)
-    reader.Read() // skip first row
+	reader.Read() // skip first row
 	/* loop through file */
 	for {
 		record, err := reader.Read()
@@ -49,12 +49,12 @@ func Extract_file_contents(filename string, stem bool) map[string]([]string) {
 			fmt.Println("Error:", err)
 			return nil
 		}
-        data[record[0]] = split_tags(record[3], stem)
-        for _, stem := range data[record[0]] {
-            Tagset[string(stem)] += 1
-        }
-    }
-    return data
+		data[record[0]] = split_tags(record[3], stem)
+		for _, stem := range data[record[0]] {
+			Tagset[string(stem)] += 1
+		}
+	}
+	return data
 }
 
 /**
@@ -63,11 +63,11 @@ func Extract_file_contents(filename string, stem bool) map[string]([]string) {
   if `stem` is True, applies the Porter stemming algorithm to all tags
 */
 func Make_patents(data map[string]([]string)) [](*Patent) {
-    patents := [](*Patent){}
+	patents := [](*Patent){}
 	/* open buzzx.csv file and start counting tags */
-    for number, taglist := range data {
+	for number, taglist := range data {
 		p := makePatent(number, taglist)
 		patents = append(patents, p)
 	}
-    return patents
+	return patents
 }
