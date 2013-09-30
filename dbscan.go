@@ -192,7 +192,7 @@ func (db *DBSCAN) Run() {
 
 /**
   Dumps db.set_of_points to a CSV file:
-  patentnumber, cluster_id
+  patentnumber, cluster_id, app_date
 
   Places all points that are part of a cluster
   at the beginning of the file. All NOISE points
@@ -212,7 +212,7 @@ func (db *DBSCAN) To_file(filename string, with_tags bool) {
 
 	for _, patent := range db.set_of_points {
 		if patent.cluster_id != UNCLASSIFIED && patent.cluster_id != NOISE {
-			line := patent.number + "," + patent.cluster_id
+			line := patent.number + "," + patent.cluster_id + "," + patent.app_date
 			if with_tags {
 				line += "," + patent.tags_to_string()
 			}
@@ -222,7 +222,7 @@ func (db *DBSCAN) To_file(filename string, with_tags bool) {
 	}
 	for _, patent := range db.set_of_points {
 		if patent.cluster_id == UNCLASSIFIED || patent.cluster_id == NOISE {
-			line := patent.number + "," + patent.cluster_id
+			line := patent.number + "," + patent.cluster_id + "," + patent.app_date
 			if with_tags {
 				line += "," + patent.tags_to_string()
 			}
