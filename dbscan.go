@@ -6,11 +6,32 @@ import (
 	"os"
 	"sort"
 	"sync"
+    "strconv"
 )
 
 var NOISE = "NOISE"               // cluster_id string for noisy patents
 var UNCLASSIFIED = "UNCLASSIFIED" // cluster_id string for unclassified patents
 var wg sync.WaitGroup
+
+type pair struct {
+    key string
+    value int
+}
+
+type PairList []pair
+func (p PairList) Swap(i, j int) {p[i], p[j] = p[i], p[j]}
+func (p PairList) Len() int {return len(p)}
+func (p PairList) Less(i, j int) bool {return p[i].value < p[j].value}
+
+func sortMapByValue(m map[string]int) PairList {
+    p := make(PairList, len(m))
+    i := 0
+    for k, v := range m {
+        p[i] = pair{k, v}
+    }
+    sort.Sort(p)
+    return p
+}
 
 type DBSCAN struct {
 	set_of_points      map[string](*Patent)
@@ -257,6 +278,34 @@ func (db *DBSCAN) Compute_Stats() (int, float64, int, int, [](*Patent)) {
 	}
 
 	return len(cluster_counts), mean_cluster_size, median_cluster_size, len(largest_cluster), largest_cluster
+}
+
+/**
+  Creates a CSV file describing all the clusters:
+  cluster_id, cluster_size
+
+  Clusters are listed in order from largest to smallest
+*/
+func (db *DBSCAN) Generate_cluster_summary (filename string) {
+	cluster_counts := make(map[string]int)
+	for _, v := range db.set_of_points {
+		if v.cluster_id != NOISE {
+			cluster_counts[v.cluster_id] += 1
+		}
+	}
+    sorted := sortMapByValue(cluster_counts)
+	outfile, err := os.Create(filename)
+	if err != nil {
+		fmt.Println("Could not output to file", filename, ":", err)
+		return
+	}
+	defer outfile.Close()
+	writer := bufio.NewWriter(outfile)
+    for _, pair := range sorted {
+        line := pair.key + ", "+ strconv.Itoa(pair.value) + "\n"
+        writer.WriteString(line)
+    }
+    writer.Flush()
 }
 
 /**
