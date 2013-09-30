@@ -1,10 +1,14 @@
 package patentcluster
 
+import (
+	"time"
+)
+
 type Patent struct {
 	number     string         // patent_id number
 	tags       map[string]int // hash of all the tags associated with this patent
 	cluster_id string         // patent_id of the cluster to which this patent belongs
-	app_date   string
+	app_date   time.Time
 }
 
 func (p *Patent) JaccardDistance(target *Patent) float64 {
@@ -34,7 +38,7 @@ func makePatent(number, app_date string, taglist []string) *Patent {
 		p.tags[tag] = 1
 	}
 	p.number = number
-	p.app_date = app_date
+	p.app_date, _ = time.Parse("Jan 02 2006", app_date)
 	return p
 }
 
