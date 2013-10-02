@@ -25,6 +25,10 @@ func (p *Patent) JaccardDistance(target *Patent) float64 {
 	return 1 - count/union
 }
 
+func (p *Patent) JaccardSimilarity(target *Patent) float64 {
+    return -p.JaccardDistance(target) + 1
+}
+
 /**
   given a string representing a patent number and
   a string representing the space-delimited list of
