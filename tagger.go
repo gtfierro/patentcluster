@@ -51,7 +51,7 @@ func Extract_file_contents(filename string, stem bool) [](*Patent) {
 		}
 		number := record[0]
 		app_date := record[1]
-		tags := split_tags(record[3], stem)
+		tags := split_tags(record[2], stem)
 		p := makePatent(number, app_date, tags)
 		patents = append(patents, p)
 		for _, stem := range tags {
